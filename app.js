@@ -47,28 +47,33 @@ const BotEvents = require('viber-bot').Events;
 
 const bot = new ViberBot({
   authToken: authToken,
-  name: "EchoBot",
-  avatar: "http://viber.com/avatar.jpg", // It is recommended to be 720x720, and no more than 100kb.
-  registerToEvents: ['message']
+  name: "faceRecognition",
+  avatar: "http://viber.com/avatar.jpg" // It is recommended to be 720x720, and no more than 100kb.
+  // registerToEvents: ['message']
 });
 
-const handlerEroor = e => console.log('error:', e);
+const handlerError = e => console.log('error:', e);
 const handlerSuccess = e => console.log('success:', e);
 
-
+bot.on(BotEvents.SUBSCRIBED, response => {
+    response.send(new TextMessage(`Hi there ${response.userProfile.name}. I am ${bot.name}! Feel free to ask me anything.`));
+});
 bot.on(BotEvents.MESSAGE_RECEIVED, (message, response) => {
-  console.log('get msg:', message);
-  response.send(message).then(handlerSuccess).catch(handlerEroor);
-});
-bot.onTextMessage(/^hi|hello$/i, (message, response) => {
-  console.log('get msg:', message);
-  response.send(message).then(handlerSuccess).catch(handlerEroor);
+    response.send(new TextMessage(`Message received.`));
 });
 
-bot.onError(handlerEroor);
+const EXPOSE_URL = 'https://f108eb22.ngrok.io';
+console.log('EXPOSE_URL', EXPOSE_URL);
+app.use(`/viber/webhook`, bot.middleware());
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+    console.log(`Application running on port: ${port}`);
+    bot.setWebhook(`${EXPOSE_URL}/viber/webhook`).catch(error => {
+        console.log('Can not set webhook on following server. Is it running?');
+        console.error(error);
+        process.exit(1);
+    });
+});
 
-bot.setWebhook('https://test.com/').then(handlerSuccess).catch(handlerEroor);
 
-// app.use("/viber/webhook", bot.middleware());
-
-module.exports = app;
+// module.exports = app;
